@@ -1,49 +1,107 @@
-// import the data from data.js
-const tableData = data;
+// from data.js
+var sightings = data;
 
-// Reference the HTML table using d3
+// reference the tbody
 var tbody = d3.select("tbody");
 
-function buildTable(data) {
-    // First, clear out any existing data
+// Submit Button handler
+function handleSubmit() {
+    // Prevent the page from refreshing
+    d3.event.preventDefault();
+    
+    // Select the date input value from the form
+    var date = d3.select("#datetime").node().value;
+    console.log(date);
+    
+    // Select the city input value from the form
+    var city = d3.select("#city").node().value;
+    console.log(city);
+
+    // Select the state input value from the form
+    var state = d3.select("#state").node().value;
+    console.log(state);
+
+    // Select the country input value from the form
+    var country = d3.select("#country").node().value;
+    console.log(country);
+
+    // Select the shape input value from the form
+    var shape = d3.select("#shape").node().value;
+    console.log(shape);
+
+    // clear the input valued
+    d3.select("#datetime").node().value = "";
+    d3.select("#city").node().value = "";
+    d3.select("#state").node().value = "";
+    d3.select("#country").node().value = "";
+    d3.select("#shape").node().value = "";
+    
+    // check that there was at least one input
+    if (date !== "" || city !== "" || state !== "" || country !== "" || shape !== "") {
+        // Build the table
+        buildTable(date, city, state, country, shape);
+    }
+    else {
+        // Print a message to the console starting that no filtered were inputed
+        console.log("There was no input criteria entered.")
+    }
+};
+
+function buildTable(date, city, state, country, shape) {
+    //Remove previous table if it is present
     tbody.html("");
-  
-    // Next, loop through each object in the data
-    // and append a row and cells for each value in the row
-    data.forEach((dataRow) => {
-      // Append a row to the table body
-      let row = tbody.append("tr");
-  
-      // Loop through each field in the dataRow and add
-      // each value as a table cell (td)
-      Object.values(dataRow).forEach((val) => {
-        let cell = row.append("td");
-        cell.text(val);
-        }
-      );
-    });
-  }
 
-  function handleClick() {
-    // Grab the datetime value from the filter
-    let date = d3.select("#datetime").property("value");
-    let filteredData = tableData;
-  
-     // Check to see if a date was entered and filter the
-    // data using that date.
-    if (date) {
-      // Apply `filter` to the table data to only keep the
-      // rows where the `datetime` value matches the filter value
-      filteredData = filteredData.filter(row => row.datetime === date);
+    // Create an array to store the filtered data
+    var filteredData = [];
+
+    // Start filtering the data using the filter inputs
+    // Check to see if a date was entered
+    if (date !== "") {
+        // Filter the data if there was a date input
+        filteredData = sightings.filter(sighting => sighting.datetime === date);
+    }
+    else {
+        // If there was no date input the filtered data will equal the original dataset
+        filteredData = sightings;
     };
-  
-     // Rebuild the table using the filtered data
-    // @NOTE: If no date was entered, then filteredData will
-    // just be the original tableData.
-    buildTable(filteredData);
-  };
+    
+    // Check to see if a city was entered
+    if (city !== "") {
+        // Filter the data if there was a city input
+        filteredData = filteredData.filter(data => data.city === city);
+    };
 
-d3.selectAll("#filter-btn").on("click", handleClick);
+     // Check to see if a state was entered
+     if (state !== "") {
+        // Filter the data if there was a state input
+        filteredData = filteredData.filter(data => data.state === state);
+    };
 
-  // Build the table when the page loads
-buildTable(tableData);
+    // Check to see if a  was entered
+    if (country !== "") {
+        // Filter the data if there was a country input
+        filteredData = filteredData.filter(data => data.country === country);
+    };
+
+    // Check to see if a shape was entered
+    if (shape !== "") {
+        // Filter the data if there was a shape input
+        filteredData = filteredData.filter(data => data.shape === shape);
+    };
+    
+    // Write the filtered data to the console
+    console.log(filteredData);
+
+    // Create a new row for each set of filtered data
+    filteredData.forEach((sighting) => {
+        var row = tbody.append("tr");
+        Object.entries(sighting).forEach(([key, value]) => {
+            var cell = row.append("td");
+            cell.text(value);
+        });
+    });
+};
+
+
+// Add event listener for submit button
+d3.select("#filter-btn").on("click", handleSubmit);
