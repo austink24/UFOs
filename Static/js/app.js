@@ -1,107 +1,79 @@
 // from data.js
-var sightings = data;
+const tableData = data;
 
-// reference the tbody
+// get table references
 var tbody = d3.select("tbody");
 
-// Submit Button handler
-function handleSubmit() {
-    // Prevent the page from refreshing
-    d3.event.preventDefault();
-    
-    // Select the date input value from the form
-    var date = d3.select("#datetime").node().value;
-    console.log(date);
-    
-    // Select the city input value from the form
-    var city = d3.select("#city").node().value;
-    console.log(city);
+function buildTable(data) {
+  // First, clear out any existing data
+  tbody.html("");
 
-    // Select the state input value from the form
-    var state = d3.select("#state").node().value;
-    console.log(state);
+  // Next, loop through each object in the data
+  // and append a row and cells for each value in the row
+  data.forEach((dataRow) => {
+    // Append a row to the table body
+    let row = tbody.append("tr");
 
-    // Select the country input value from the form
-    var country = d3.select("#country").node().value;
-    console.log(country);
-
-    // Select the shape input value from the form
-    var shape = d3.select("#shape").node().value;
-    console.log(shape);
-
-    // clear the input valued
-    d3.select("#datetime").node().value = "";
-    d3.select("#city").node().value = "";
-    d3.select("#state").node().value = "";
-    d3.select("#country").node().value = "";
-    d3.select("#shape").node().value = "";
-    
-    // check that there was at least one input
-    if (date !== "" || city !== "" || state !== "" || country !== "" || shape !== "") {
-        // Build the table
-        buildTable(date, city, state, country, shape);
-    }
-    else {
-        // Print a message to the console starting that no filtered were inputed
-        console.log("There was no input criteria entered.")
-    }
-};
-
-function buildTable(date, city, state, country, shape) {
-    //Remove previous table if it is present
-    tbody.html("");
-
-    // Create an array to store the filtered data
-    var filteredData = [];
-
-    // Start filtering the data using the filter inputs
-    // Check to see if a date was entered
-    if (date !== "") {
-        // Filter the data if there was a date input
-        filteredData = sightings.filter(sighting => sighting.datetime === date);
-    }
-    else {
-        // If there was no date input the filtered data will equal the original dataset
-        filteredData = sightings;
-    };
-    
-    // Check to see if a city was entered
-    if (city !== "") {
-        // Filter the data if there was a city input
-        filteredData = filteredData.filter(data => data.city === city);
-    };
-
-     // Check to see if a state was entered
-     if (state !== "") {
-        // Filter the data if there was a state input
-        filteredData = filteredData.filter(data => data.state === state);
-    };
-
-    // Check to see if a  was entered
-    if (country !== "") {
-        // Filter the data if there was a country input
-        filteredData = filteredData.filter(data => data.country === country);
-    };
-
-    // Check to see if a shape was entered
-    if (shape !== "") {
-        // Filter the data if there was a shape input
-        filteredData = filteredData.filter(data => data.shape === shape);
-    };
-    
-    // Write the filtered data to the console
-    console.log(filteredData);
-
-    // Create a new row for each set of filtered data
-    filteredData.forEach((sighting) => {
-        var row = tbody.append("tr");
-        Object.entries(sighting).forEach(([key, value]) => {
-            var cell = row.append("td");
-            cell.text(value);
-        });
+    // Loop through each field in the dataRow and add
+    // each value as a table cell (td)
+    Object.values(dataRow).forEach((val) => {
+      let cell = row.append("td");
+      cell.text(val);
     });
-};
+  });
+}
 
+// 1. Create a variable to keep track of all the filters as an object.
+var filters = {};
 
-// Add event listener for submit button
-d3.select("#filter-btn").on("click", handleSubmit);
+// 3. Use this function to update the filters. 
+function updateFilters() {
+
+    // 4a. Save the element that was changed as a variable.
+    let changedElement = d3.select(this);
+
+    // 4b. Save the value that was changed as a variable.
+    let elementValue = changedElement.property("value");
+    console.log("input filter value",elementValue);
+    // 4c. Save the id of the filter that was changed as a variable.
+    let filterId = changedElement.attr("id");
+    console.log(filterId);
+  
+    // 5. If a filter value was entered then add that filterId and value
+    // to the filters list. Otherwise, clear that filter from the filters object.
+    if (elementValue) {
+      filters[filterId] = elementValue;
+    }
+    else {
+      delete filters[filterId];
+    }  
+    // 6. Call function to apply all filters and rebuild the table
+    filterTable();
+  
+  }
+  
+  // 7. Use this function to filter the table when data is entered.
+  function filterTable() {
+  
+    // 8. Set the filtered data to the tableData.
+    let filteredData = tableData;
+    console.log(filteredData)
+  
+    // 9. Loop through all of the filters and keep any data that
+    // matches the filter values
+    Object.entries(filters).forEach(([key,value ]) => {
+      console.log(key)
+      filteredData = filteredData.filter(row => row[key] === value);
+    });
+
+    console.log("new filter table", filteredData)
+  
+    // 10. Finally, rebuild the table using the filtered data
+    buildTable(filteredData);
+  }
+  
+  // 2. Attach an event to listen for changes to each filter
+  d3.selectAll("input").on("change", updateFilters);
+  
+  // Build the table when the page loads
+  buildTable(tableData);
